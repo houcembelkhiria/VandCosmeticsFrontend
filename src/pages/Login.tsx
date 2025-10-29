@@ -131,7 +131,7 @@ const Login = () => {
             </p>
           </div>
 
-          {/* Demo credentials */}
+          {/* Demo credentials
           <Alert className="mt-4">
             <AlertDescription>
               <strong>Identifiants de démonstration :</strong><br />
@@ -163,6 +163,7 @@ const Login = () => {
               </div>
             </AlertDescription>
           </Alert>
+           */}
         </CardContent>
       </Card>
     </div>

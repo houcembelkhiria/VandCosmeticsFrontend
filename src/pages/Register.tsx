@@ -218,7 +218,7 @@ const Register = () => {
             </p>
           </div>
 
-          {/* Demo credentials */}
+          {/* Demo credentials 
           <Alert className="mt-4">
             <AlertDescription>
               <strong>Compte de démonstration ?</strong><br />
@@ -254,6 +254,7 @@ const Register = () => {
               </div>
             </AlertDescription>
           </Alert>
+          */}
         </CardContent>
       </Card>
     </div>
