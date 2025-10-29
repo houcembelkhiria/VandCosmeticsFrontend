@@ -6,20 +6,21 @@ import { useCartStore } from '@/store/cartStore';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { createOrder } from '@/api/orders';
-import { sendOrderConfirmation } from '@/lib/resend';
+import { createOrder, CreateOrderData } from '@/api/orders';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { tunisianPhoneSchema } from '@/lib/validation';
+import { useDeliveryFee } from '@/hooks/useParameters';
+import { Truck, AlertCircle } from 'lucide-react';
 
 const checkoutSchema = z.object({
-  fullName: z.string().min(2, 'Full name is required').max(100),
-  email: z.string().email('Invalid email address').max(255),
-  phone: z.string().min(10, 'Phone number is required').max(20),
-  address: z.string().min(5, 'Address is required').max(200),
-  city: z.string().min(2, 'City is required').max(100),
-  state: z.string().min(2, 'State is required').max(100),
-  zipCode: z.string().min(4, 'ZIP code is required').max(10),
-  country: z.string().min(2, 'Country is required').max(100)
+  fullName: z.string().min(2, 'Le nom complet est requis').max(100),
+  email: z.string().email('Adresse e-mail invalide').max(255),
+  phone: tunisianPhoneSchema,
+  address: z.string().min(5, 'L\'adresse est requise').max(200),
+  city: z.string().min(2, 'La ville est requise').max(100),
+  state: z.string().min(2, 'L\'état/province est requis').max(100),
+  zipCode: z.string().min(4, 'Le code postal est requis').max(10)
 });
 
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
@@ -27,9 +28,23 @@ type CheckoutFormData = z.infer<typeof checkoutSchema>;
 const Checkout = () => {
   const navigate = useNavigate();
   const items = useCartStore((state) => state.items);
-  const total = useCartStore((state) => state.getTotal());
+  const subtotal = useCartStore((state) => state.getTotal());
   const clearCart = useCartStore((state) => state.clearCart);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Calculate delivery fee
+  const { deliveryFee, isFreeDelivery, isLoading: isLoadingDelivery, error: deliveryError } = useDeliveryFee(subtotal);
+  
+  const total = subtotal + deliveryFee;
+  
+  // Debug log
+  useEffect(() => {
+    console.log('Checkout - Subtotal:', subtotal);
+    console.log('Checkout - Delivery Fee:', deliveryFee);
+    console.log('Checkout - Is Free Delivery:', isFreeDelivery);
+    console.log('Checkout - Total:', total);
+    console.log('Checkout - Delivery Error:', deliveryError);
+  }, [subtotal, deliveryFee, isFreeDelivery, total, deliveryError]);
 
   const {
     register,
@@ -44,7 +59,7 @@ const Checkout = () => {
 
     try {
       // Create order
-      const order = await createOrder({
+      const orderData: CreateOrderData = {
         customerEmail: data.email,
         customerName: data.fullName,
         items: items.map(item => ({
@@ -52,7 +67,8 @@ const Checkout = () => {
           variantId: item.variantId,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
-          title: item.title
+          title: item.title,
+          image: item.image
         })),
         shipping: {
           fullName: data.fullName,
@@ -62,21 +78,16 @@ const Checkout = () => {
           city: data.city,
           state: data.state,
           zipCode: data.zipCode,
-          country: data.country
+          country: 'Tunisie',
+          deliveryFee: deliveryFee,
+          isFreeDelivery: isFreeDelivery
         },
-        subtotal: total,
+        subtotal: subtotal,
         discount: 0,
         total: total
-      });
-
-      // Send confirmation email (DEMO only - move to backend in production)
-      // TODO: Get Resend API key from environment variable
-      // For demo, this will log a warning if not configured
-      const emailResult = await sendOrderConfirmation(order);
+      };
       
-      if (!emailResult.success) {
-        console.warn('Email not sent:', emailResult.error);
-      }
+      const order = await createOrder(orderData);
 
       // Clear cart
       clearCart();
@@ -84,42 +95,47 @@ const Checkout = () => {
       // Navigate to confirmation
       navigate(`/order/${order.id}`);
       
-      toast.success('Order placed successfully!', {
-        description: `Order ${order.id} confirmed`
+      toast.success('Commande passée avec succès !', {
+        description: `Commande ${order.id} confirmée`
       });
     } catch (error: any) {
       console.error('Checkout error:', error);
-      toast.error('Failed to place order', {
-        description: error.message || 'Please try again'
+      toast.error('Échec de la commande', {
+        description: error.message || 'Veuillez réessayer'
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  useEffect(() => {
+    if (items.length === 0) {
+      navigate('/cart');
+    }
+  }, [items.length, navigate]);
+
   if (items.length === 0) {
-    navigate('/cart');
     return null;
   }
 
   return (
-    <main className="container py-8 px-4">
-      <h1 className="text-4xl font-bold mb-8">Checkout</h1>
+    <main className="container py-6 sm:py-8 px-4">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 sm:mb-8">Paiement</h1>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Shipping Form */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="border rounded-xl p-6 space-y-4">
-              <h2 className="text-xl font-semibold mb-4">Shipping Information</h2>
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+            <div className="border rounded-xl p-4 sm:p-6 space-y-4">
+              <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Informations de livraison</h2>
 
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name *</Label>
+                  <Label htmlFor="fullName" className="text-sm">Nom complet *</Label>
                   <Input
                     id="fullName"
                     {...register('fullName')}
-                    placeholder="Jane Smith"
+                    className="text-sm"
                   />
                   {errors.fullName && (
                     <p className="text-xs text-destructive">{errors.fullName.message}</p>
@@ -127,12 +143,12 @@ const Checkout = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
+                  <Label htmlFor="email" className="text-sm">E-mail *</Label>
                   <Input
                     id="email"
                     type="email"
                     {...register('email')}
-                    placeholder="jane@example.com"
+                    className="text-sm"
                   />
                   {errors.email && (
                     <p className="text-xs text-destructive">{errors.email.message}</p>
@@ -141,11 +157,12 @@ const Checkout = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone *</Label>
+                <Label htmlFor="phone" className="text-sm">Téléphone *</Label>
                 <Input
                   id="phone"
+                  type="tel"
                   {...register('phone')}
-                  placeholder="+1 (555) 123-4567"
+                  className="text-sm"
                 />
                 {errors.phone && (
                   <p className="text-xs text-destructive">{errors.phone.message}</p>
@@ -153,24 +170,24 @@ const Checkout = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="address">Address *</Label>
+                <Label htmlFor="address" className="text-sm">Adresse *</Label>
                 <Input
                   id="address"
                   {...register('address')}
-                  placeholder="123 Main Street, Apt 4B"
+                  className="text-sm"
                 />
                 {errors.address && (
                   <p className="text-xs text-destructive">{errors.address.message}</p>
                 )}
               </div>
 
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="city">City *</Label>
+                  <Label htmlFor="city" className="text-sm">Ville *</Label>
                   <Input
                     id="city"
                     {...register('city')}
-                    placeholder="New York"
+                    className="text-sm"
                   />
                   {errors.city && (
                     <p className="text-xs text-destructive">{errors.city.message}</p>
@@ -178,48 +195,36 @@ const Checkout = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="state">State *</Label>
+                  <Label htmlFor="state" className="text-sm">Gouvernorat *</Label>
                   <Input
                     id="state"
                     {...register('state')}
-                    placeholder="NY"
+                    className="text-sm"
                   />
                   {errors.state && (
                     <p className="text-xs text-destructive">{errors.state.message}</p>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="zipCode">ZIP Code *</Label>
+                <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+                  <Label htmlFor="zipCode" className="text-sm">Code postal *</Label>
                   <Input
                     id="zipCode"
                     {...register('zipCode')}
-                    placeholder="10001"
+                    className="text-sm"
                   />
                   {errors.zipCode && (
                     <p className="text-xs text-destructive">{errors.zipCode.message}</p>
                   )}
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="country">Country *</Label>
-                <Input
-                  id="country"
-                  {...register('country')}
-                  placeholder="United States"
-                />
-                {errors.country && (
-                  <p className="text-xs text-destructive">{errors.country.message}</p>
-                )}
-              </div>
             </div>
           </div>
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="border rounded-xl p-6 sticky top-24 space-y-6">
-              <h2 className="text-xl font-semibold">Order Summary</h2>
+            <div className="border rounded-xl p-4 sm:p-6 sticky top-20 sm:top-24 space-y-4 sm:space-y-6">
+              <h2 className="text-lg sm:text-xl font-semibold">Résumé de la commande</h2>
 
               <div className="space-y-3">
                 {items.map((item) => (
@@ -227,46 +232,68 @@ const Checkout = () => {
                     <img
                       src={item.image}
                       alt={item.title}
-                      className="w-16 h-16 object-cover rounded"
+                      className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{item.title}</p>
-                      <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                      <p className="text-xs sm:text-sm font-medium truncate">{item.title}</p>
+                      <p className="text-xs text-muted-foreground">Qté: {item.quantity}</p>
                     </div>
-                    <p className="text-sm font-semibold">
-                      ${(item.unitPrice * item.quantity).toFixed(2)}
+                    <p className="text-xs sm:text-sm font-semibold">
+                      {(item.unitPrice * item.quantity).toFixed(2)} TND
                     </p>
                   </div>
                 ))}
               </div>
 
-              <div className="space-y-2 pt-4 border-t">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-medium">${total.toFixed(2)}</span>
+              <div className="space-y-2 pt-3 sm:pt-4 border-t">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Sous-total</span>
+                  <span className="font-medium">{subtotal.toFixed(2)} TND</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Shipping</span>
-                  <span className="font-medium">Free</span>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground flex items-center gap-1">
+                    Livraison
+                    {!isLoadingDelivery && isFreeDelivery && (
+                      <span className="text-green-600 flex items-center gap-1">
+                        <Truck className="h-3 w-3" />
+                        Gratuite!
+                      </span>
+                    )}
+                    {!isLoadingDelivery && deliveryError && (
+                      <span className="text-destructive flex items-center gap-1" title="Erreur de calcul">
+                        <AlertCircle className="h-3 w-3" />
+                      </span>
+                    )}
+                  </span>
+                  <span className={`font-medium ${isFreeDelivery && !isLoadingDelivery ? 'text-green-600' : ''}`}>
+                    {isLoadingDelivery ? (
+                      <span className="flex items-center gap-1">
+                        <span className="h-3 w-3 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
+                        Calcul...
+                      </span>
+                    ) : isFreeDelivery ? 'Gratuite' : `${deliveryFee.toFixed(2)} TND`}
+                  </span>
                 </div>
               </div>
 
-              <div className="flex justify-between text-lg font-bold pt-4 border-t">
+              <div className="flex justify-between text-base sm:text-lg font-bold pt-3 sm:pt-4 border-t">
                 <span>Total</span>
-                <span className="text-primary">${total.toFixed(2)}</span>
+                <span className="text-primary">
+                  {isLoadingDelivery ? '...' : total.toFixed(2)} TND
+                </span>
               </div>
 
               <Button
                 type="submit"
                 size="lg"
-                className="w-full"
+                className="w-full h-12 sm:h-14 text-sm sm:text-base"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Processing...' : 'Place Order'}
+                {isSubmitting ? 'Traitement...' : 'Passer la commande'}
               </Button>
 
               <p className="text-xs text-muted-foreground text-center">
-                By placing your order, you agree to our terms and conditions.
+                En passant votre commande, vous acceptez nos conditions générales.
               </p>
             </div>
           </div>

@@ -27,9 +27,9 @@ const OrderConfirmation = () => {
   if (!order) {
     return (
       <div className="container py-16 px-4 text-center">
-        <h1 className="text-2xl font-bold mb-4">Order not found</h1>
+        <h1 className="text-2xl font-bold mb-4">Commande non trouvée</h1>
         <Button asChild>
-          <Link to="/">Back to Home</Link>
+          <Link to="/">Retour à l'accueil</Link>
         </Button>
       </div>
     );
@@ -43,12 +43,12 @@ const OrderConfirmation = () => {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 mb-6">
             <CheckCircle className="w-12 h-12 text-green-600" />
           </div>
-          <h1 className="text-4xl font-bold mb-4">Order Confirmed!</h1>
+          <h1 className="text-4xl font-bold mb-4">Commande Confirmée !</h1>
           <p className="text-lg text-muted-foreground mb-2">
-            Thank you for your purchase, {order.shipping.fullName}
+            Merci pour votre achat, {order.shipping.fullName}
           </p>
           <p className="text-sm text-muted-foreground">
-            Order #{order.id}
+            Commande #{order.id}
           </p>
         </div>
 
@@ -59,9 +59,9 @@ const OrderConfirmation = () => {
               <Mail className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold mb-1">Confirmation Email Sent</h3>
+              <h3 className="font-semibold mb-1">E-mail de confirmation envoyé</h3>
               <p className="text-sm text-muted-foreground">
-                We've sent a confirmation to {order.shipping.email}
+                Nous avons envoyé une confirmation à {order.shipping.email}
               </p>
             </div>
           </div>
@@ -71,9 +71,9 @@ const OrderConfirmation = () => {
               <Package className="w-6 h-6 text-accent" />
             </div>
             <div>
-              <h3 className="font-semibold mb-1">Order Processing</h3>
+              <h3 className="font-semibold mb-1">Traitement de la commande</h3>
               <p className="text-sm text-muted-foreground">
-                We'll notify you when your order ships
+                Nous vous informerons lorsque votre commande sera expédiée
               </p>
             </div>
           </div>
@@ -81,7 +81,7 @@ const OrderConfirmation = () => {
 
         {/* Order Details */}
         <div className="border rounded-xl p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-6">Order Details</h2>
+          <h2 className="text-xl font-semibold mb-6">Détails de la commande</h2>
 
           <div className="space-y-4 mb-6">
             {order.items.map((item, index) => (
@@ -92,15 +92,15 @@ const OrderConfirmation = () => {
                     <p className="text-sm text-muted-foreground">{item.variantId}</p>
                   )}
                   <p className="text-sm text-muted-foreground mt-1">
-                    Quantity: {item.quantity}
+                    Quantité : {item.quantity}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="font-semibold">
-                    ${(item.unitPrice * item.quantity).toFixed(2)}
+                    {(item.unitPrice * item.quantity).toFixed(2)} TND
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    ${item.unitPrice.toFixed(2)} each
+                    {item.unitPrice.toFixed(2)} TND chacun
                   </p>
                 </div>
               </div>
@@ -109,31 +109,31 @@ const OrderConfirmation = () => {
 
           <div className="space-y-2 pt-4 border-t">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-medium">${order.subtotal.toFixed(2)}</span>
+              <span className="text-muted-foreground">Sous-total</span>
+              <span className="font-medium">{order.subtotal.toFixed(2)} TND</span>
             </div>
             {order.discount > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Discount</span>
+                <span className="text-muted-foreground">Remise</span>
                 <span className="font-medium text-green-600">
-                  -${order.discount.toFixed(2)}
+                  -{order.discount.toFixed(2)} TND
                 </span>
               </div>
             )}
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Shipping</span>
-              <span className="font-medium">Free</span>
+              <span className="text-muted-foreground">Livraison</span>
+              <span className="font-medium">Gratuite</span>
             </div>
             <div className="flex justify-between text-lg font-bold pt-2 border-t">
               <span>Total</span>
-              <span className="text-primary">${order.total.toFixed(2)}</span>
+              <span className="text-primary">{order.total.toFixed(2)} TND</span>
             </div>
           </div>
         </div>
 
         {/* Shipping Address */}
         <div className="border rounded-xl p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">Shipping Address</h2>
+          <h2 className="text-xl font-semibold mb-4">Adresse de livraison</h2>
           <div className="text-sm space-y-1">
             <p className="font-medium">{order.shipping.fullName}</p>
             <p>{order.shipping.address}</p>
@@ -148,10 +148,10 @@ const OrderConfirmation = () => {
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-4">
           <Button size="lg" className="flex-1" asChild>
-            <Link to="/products">Continue Shopping</Link>
+            <Link to="/products">Continuer mes achats</Link>
           </Button>
           <Button size="lg" variant="outline" className="flex-1" asChild>
-            <Link to="/">Back to Home</Link>
+            <Link to="/">Retour à l'accueil</Link>
           </Button>
         </div>
       </div>

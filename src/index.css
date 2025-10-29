@@ -95,4 +95,56 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Mobile-specific improvements */
+  @media (max-width: 640px) {
+    /* Improve touch targets */
+    button, 
+    [role="button"], 
+    input[type="button"], 
+    input[type="submit"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    /* Better text scaling */
+    html {
+      font-size: 16px;
+    }
+
+    /* Prevent zoom on input focus */
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"],
+    textarea,
+    select {
+      font-size: 16px;
+    }
+
+    /* Improve scrolling */
+    * {
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Better focus indicators for mobile */
+    button:focus-visible,
+    [role="button"]:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible {
+      outline: 2px solid hsl(var(--ring));
+      outline-offset: 2px;
+    }
+  }
+
+  /* Tablet and up improvements */
+  @media (min-width: 768px) {
+    /* Better hover states for desktop */
+    button:hover,
+    [role="button"]:hover {
+      transform: translateY(-1px);
+      transition: transform 0.2s ease;
+    }
+  }
 }

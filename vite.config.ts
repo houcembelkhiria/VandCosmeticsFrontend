@@ -6,7 +6,7 @@ import path from "path";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 5050,
+    port: 3000,
   },
   resolve: {
     alias: {

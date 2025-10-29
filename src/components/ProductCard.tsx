@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Heart } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Product } from '@/data/dummyData';
@@ -24,7 +24,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
       unitPrice: product.price
     });
 
-    toast.success('Added to cart!', {
+    toast.success('Ajouté au panier !', {
       description: product.title
     });
   };
@@ -48,7 +48,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           <div className="absolute top-3 left-3 flex flex-col gap-2">
             {product.featured && (
               <Badge variant="default" className="bg-primary">
-                Featured
+                En vedette
               </Badge>
             )}
             {discount > 0 && (
@@ -56,20 +56,6 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             )}
           </div>
 
-          {/* Quick actions */}
-          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button
-              variant="secondary"
-              size="icon"
-              className="rounded-full shadow-lg"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-            >
-              <Heart className="h-4 w-4" />
-            </Button>
-          </div>
 
           {/* Quick add button */}
           <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -78,7 +64,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               onClick={handleQuickAdd}
             >
               <ShoppingBag className="h-4 w-4 mr-2" />
-              Quick Add
+              Ajout rapide
             </Button>
           </div>
         </div>
@@ -90,22 +76,22 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
           <div className="flex items-center gap-2">
             <span className="text-lg font-bold text-primary">
-              ${product.price.toFixed(2)}
+              {product.price.toFixed(2)} TND
             </span>
             {product.compareAtPrice && (
               <span className="text-sm text-muted-foreground line-through">
-                ${product.compareAtPrice.toFixed(2)}
+                {product.compareAtPrice.toFixed(2)} TND
               </span>
             )}
           </div>
 
           {product.stock < 10 && product.stock > 0 && (
             <p className="text-xs text-destructive mt-2">
-              Only {product.stock} left in stock
+              Plus que {product.stock} en stock
             </p>
           )}
           {product.stock === 0 && (
-            <p className="text-xs text-muted-foreground mt-2">Out of stock</p>
+            <p className="text-xs text-muted-foreground mt-2">Rupture de stock</p>
           )}
         </div>
       </div>

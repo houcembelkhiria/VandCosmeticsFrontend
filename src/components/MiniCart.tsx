@@ -27,7 +27,7 @@ export const MiniCart = ({ isOpen, onClose }: MiniCartProps) => {
       <div className="fixed right-0 top-0 h-full w-full max-w-md bg-background z-50 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-lg font-semibold">Shopping Cart</h2>
+          <h2 className="text-lg font-semibold">Panier d'achat</h2>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-5 w-5" />
           </Button>
@@ -38,12 +38,12 @@ export const MiniCart = ({ isOpen, onClose }: MiniCartProps) => {
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <ShoppingBag className="h-16 w-16 text-muted-foreground mb-4" />
-              <p className="text-lg font-medium mb-2">Your cart is empty</p>
+              <p className="text-lg font-medium mb-2">Votre panier est vide</p>
               <p className="text-sm text-muted-foreground mb-6">
-                Start adding some beautiful products!
+                Commencez à ajouter de beaux produits !
               </p>
               <Button onClick={onClose} asChild>
-                <Link to="/products">Browse Products</Link>
+                <Link to="/products">Parcourir les produits</Link>
               </Button>
             </div>
           ) : (
@@ -64,12 +64,12 @@ export const MiniCart = ({ isOpen, onClose }: MiniCartProps) => {
           <div className="border-t p-6 space-y-4">
             <div className="flex items-center justify-between text-lg font-semibold">
               <span>Total</span>
-              <span className="text-primary">${total.toFixed(2)}</span>
+              <span className="text-primary">{total.toFixed(2)} TND</span>
             </div>
 
             <div className="space-y-2">
               <Button className="w-full" size="lg" asChild onClick={onClose}>
-                <Link to="/cart">View Cart</Link>
+                <Link to="/cart">Voir le panier</Link>
               </Button>
               <Button
                 className="w-full"
@@ -78,7 +78,7 @@ export const MiniCart = ({ isOpen, onClose }: MiniCartProps) => {
                 asChild
                 onClick={onClose}
               >
-                <Link to="/checkout">Checkout</Link>
+                <Link to="/checkout">Commander</Link>
               </Button>
             </div>
           </div>
