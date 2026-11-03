@@ -65,7 +65,14 @@ export const useDeliveryFee = (subtotal: number) => {
 export const DEFAULT_TIMBRE_FISCAL = 1;
 
 export const useTimbreFiscal = () => {
-  const { data, isLoading } = useParameter('timbre_fiscal');
+  // No retry: a missing parameter (404) must fall back to the default at once, not after several backoffs.
+  const { data, isLoading } = useQuery({
+    queryKey: ['parameter', 'timbre_fiscal'],
+    queryFn: () => getParameterByKey('timbre_fiscal'),
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
   const parsed = data?.value !== undefined ? parseFloat(data.value) : NaN;
   const timbreFiscal = Number.isFinite(parsed) && parsed >= 0 ? parsed : DEFAULT_TIMBRE_FISCAL;
   return { timbreFiscal, isLoading };
