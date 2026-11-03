@@ -57,3 +57,16 @@ export const useDeliveryFee = (subtotal: number) => {
   };
 };
 
+
+/**
+ * Droit de timbre fiscal (Tunisie) ajouté à chaque facture : 1,000 TND par défaut.
+ * Réglable (ou à 0 pour le désactiver) via le paramètre « timbre_fiscal ».
+ */
+export const DEFAULT_TIMBRE_FISCAL = 1;
+
+export const useTimbreFiscal = () => {
+  const { data, isLoading } = useParameter('timbre_fiscal');
+  const parsed = data?.value !== undefined ? parseFloat(data.value) : NaN;
+  const timbreFiscal = Number.isFinite(parsed) && parsed >= 0 ? parsed : DEFAULT_TIMBRE_FISCAL;
+  return { timbreFiscal, isLoading };
+};

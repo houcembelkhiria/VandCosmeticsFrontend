@@ -10,7 +10,7 @@ import { createOrder, CreateOrderData } from '@/api/orders';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { tunisianPhoneSchema } from '@/lib/validation';
-import { useDeliveryFee } from '@/hooks/useParameters';
+import { useDeliveryFee, useTimbreFiscal } from '@/hooks/useParameters';
 import { Truck, AlertCircle } from 'lucide-react';
 
 const checkoutSchema = z.object({
@@ -35,7 +35,10 @@ const Checkout = () => {
   // Calculate delivery fee
   const { deliveryFee, isFreeDelivery, isLoading: isLoadingDelivery, error: deliveryError } = useDeliveryFee(subtotal);
   
-  const total = subtotal + deliveryFee;
+  const { timbreFiscal, isLoading: isLoadingTimbre } = useTimbreFiscal();
+
+  // Le timbre fiscal figure sur la facture : le client doit le voir dans le total.
+  const total = subtotal + deliveryFee + timbreFiscal;
   
   // Debug log
   useEffect(() => {
@@ -276,10 +279,17 @@ const Checkout = () => {
                 </div>
               </div>
 
+              {timbreFiscal > 0 && (
+                <div className="flex justify-between text-sm pt-2">
+                  <span className="text-muted-foreground">Timbre fiscal</span>
+                  <span className="font-medium">{isLoadingTimbre ? '...' : `${timbreFiscal.toFixed(2)} TND`}</span>
+                </div>
+              )}
+
               <div className="flex justify-between text-base sm:text-lg font-bold pt-3 sm:pt-4 border-t">
                 <span>Total</span>
                 <span className="text-primary">
-                  {isLoadingDelivery ? '...' : total.toFixed(2)} TND
+                  {isLoadingDelivery || isLoadingTimbre ? '...' : total.toFixed(2)} TND
                 </span>
               </div>
 
